@@ -287,9 +287,11 @@ class App {
     inputType.value = workout.type;
     inputDistance.value = workout.distance;
     inputDuration.value = workout.duration;
-    inputType.value === 'running'
-      ? (inputCadence.value = workout.cadence)
-      : (inputElevation.value = workout.elevation);
+    if (inputType.value === 'running') inputCadence.value = workout.cadence;
+    if (inputType.value === 'cycling') {
+      this._toggleElevationField();
+      inputElevation.value = workout.elevationGain;
+    }
     this._showForm();
   }
 
