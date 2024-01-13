@@ -161,7 +161,7 @@ class App {
         !allPositive(distance, duration)
       )
         return alert('Inputs have to be positive numbers');
-      workout = new Running([lat, lng], distance, duration, elevation);
+      workout = new Cycling([lat, lng], distance, duration, elevation);
     }
 
     this.#workouts.push(workout);
