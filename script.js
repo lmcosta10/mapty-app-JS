@@ -76,6 +76,8 @@ class App {
 
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+
+    containerWorkouts.addEventListener('click', this._editWorkout.bind(this));
   }
 
   _getPosition() {
@@ -164,7 +166,6 @@ class App {
 
     this.#workouts.push(workout);
 
-    // Era aqui - passar e como parametro
     e.preventDefault();
 
     inputDistance.value =
@@ -201,6 +202,7 @@ class App {
     let html = `
     <li class="workout workout--${workout.type}" data-id="${workout.id}">
       <h2 class="workout__title">${workout.description}</h2>
+      <p class="workout__edit">✍️</p>
       <div class="workout__details">
         <span class="workout__icon">${
           workout.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'
@@ -262,6 +264,16 @@ class App {
         duration: 1,
       },
     });
+  }
+
+  _editWorkout(e) {
+    if (!e.target.classList.contains('workout__edit')) return;
+
+    const workoutEl = e.target.closest('.workout');
+    if (!workoutEl) return;
+
+    // TODO: remove
+    console.log(workoutEl);
   }
 
   _setLocalStorage() {
