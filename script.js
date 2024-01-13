@@ -247,6 +247,7 @@ class App {
     </li>`;
 
     form.insertAdjacentHTML('afterend', html);
+    console.log(html);
   }
 
   _moveToPopup(e) {
@@ -272,8 +273,17 @@ class App {
     const workoutEl = e.target.closest('.workout');
     if (!workoutEl) return;
 
-    // TODO: remove
-    console.log(workoutEl);
+    const workout = this.#workouts.find(
+      work => work.id === workoutEl.dataset.id
+    );
+
+    inputType.value = workout.type;
+    inputDistance.value = workout.distance;
+    inputDuration.value = workout.duration;
+    inputType.value === 'running'
+      ? (inputCadence.value = workout.cadence)
+      : (inputElevation.value = workout.elevation);
+    this._showForm();
   }
 
   _setLocalStorage() {
