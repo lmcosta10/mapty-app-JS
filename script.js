@@ -72,12 +72,20 @@ class App {
 
     this._getLocalStorage();
 
+    document.addEventListener('keydown', this._cancelForm.bind(this));
+
     form.addEventListener('submit', this._newWorkout.bind(this));
 
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
 
     containerWorkouts.addEventListener('click', this._editWorkout.bind(this));
+  }
+
+  _cancelForm(e) {
+    if (e.key === 'Escape' && !form.classList.contains('hidden')) {
+      this._hideForm();
+    }
   }
 
   _getPosition() {
@@ -247,7 +255,6 @@ class App {
     </li>`;
 
     form.insertAdjacentHTML('afterend', html);
-    console.log(html);
   }
 
   _moveToPopup(e) {
