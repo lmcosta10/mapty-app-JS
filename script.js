@@ -221,12 +221,12 @@ class App {
         <span class="workout__icon">${
           workout.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'
         }</span>
-        <span class="workout__value">${workout.distance}</span>
+        <span class="workout__value distance">${workout.distance}</span>
         <span class="workout__unit">km</span>
       </div>
       <div class="workout__details">
         <span class="workout__icon">⏱</span>
-        <span class="workout__value">${workout.duration}</span>
+        <span class="workout__value duration">${workout.duration}</span>
         <span class="workout__unit">min</span>
       </div>
   `;
@@ -235,12 +235,12 @@ class App {
       html += `
       <div class="workout__details">
         <span class="workout__icon">⚡️</span>
-        <span class="workout__value">${workout.pace.toFixed(1)}</span>
+        <span class="workout__value pace">${workout.pace.toFixed(1)}</span>
         <span class="workout__unit">min/km</span>
       </div>
       <div class="workout__details">
         <span class="workout__icon">🦶🏼</span>
-        <span class="workout__value">${workout.cadence}</span>
+        <span class="workout__value cadence">${workout.cadence}</span>
         <span class="workout__unit">spm</span>
       </div>
     </li>
@@ -250,17 +250,38 @@ class App {
       html += `
     <div class="workout__details">
       <span class="workout__icon">⚡️</span>
-      <span class="workout__value">${workout.speed}</span>
+      <span class="workout__value speed">${workout.speed}</span>
       <span class="workout__unit">km/h</span>
     </div>
     <div class="workout__details">
       <span class="workout__icon">⛰</span>
-      <span class="workout__value">${workout.elevationGain}</span>
+      <span class="workout__value elevationGain">${workout.elevationGain}</span>
       <span class="workout__unit">m</span>
     </div>
     </li>`;
 
     form.insertAdjacentHTML('afterend', html);
+  }
+
+  _reloadWorkout(workout) {
+    const workoutEl = document.querySelector(`[data-id="${workout.id}"]`);
+    workoutEl.querySelector('.workout__value.distance').textContent =
+      workout.distance;
+    workoutEl.querySelector('.workout__value.duration').textContent =
+      workout.duration;
+
+    if (workout.type === 'running') {
+      workoutEl.querySelector('.workout__value.pace').textContent =
+        workout.pace;
+      workoutEl.querySelector('.workout__value.cadence').textContent =
+        workout.cadence;
+    }
+    if (workout.type === 'cycling') {
+      workoutEl.querySelector('.workout__value.speed').textContent =
+        workout.speed;
+      workoutEl.querySelector('.workout__value.elevationGain').textContent =
+        workout.elevationGain;
+    }
   }
 
   _moveToPopup(e) {
@@ -311,6 +332,7 @@ class App {
       workout.distance = distance;
       workout.duration = duration;
       workout.cadence = cadence;
+      workout.pace = workout.duration / workout.distance;
     }
 
     if (type === 'cycling') {
@@ -324,6 +346,7 @@ class App {
       workout.distance = distance;
       workout.duration = duration;
       workout.elevationGain = elevation;
+      workout.speed = workout.distance / (workout.duration / 60);
     }
 
     inputDistance.value =
@@ -332,18 +355,8 @@ class App {
       inputElevation.value =
         '';
 
-    // TODO: change workout in list
-    // Not the following code because it creates a new html!
-    // this._renderWorkout(workout);
-    //
-    /*
-    const workoutHtml = document.querySelector(`[data-id="${workout.id}"]`);
-    if (workout.type === 'running') {
-      workoutHtml.classList.remove('workout--cycling');
-      workoutHtml.classList.add('workout--running');
-    }
-    workoutHtml.querySelector('.workout__icon').value =
-    */
+    this._reloadWorkout(workout);
+    this._setLocalStorage();
 
     this._hideForm();
 
