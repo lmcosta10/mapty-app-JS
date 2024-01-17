@@ -271,12 +271,31 @@ class App {
       workout.duration;
 
     if (workout.type === 'running') {
+      // TODO: change sidebar titles and emojis after type change
+      // If type was changed:
+      workoutEl.querySelector('.workout__value.speed')?.classList.add('pace') &&
+        workoutEl.querySelector('.workout__value.speed').remove('speed');
+      workoutEl
+        .querySelector('.workout__value.elevationGain')
+        ?.classList.add('cadence') &&
+        workoutEl
+          .querySelector('.workout__value.elevationGain')
+          .remove('elevationGain');
+
       workoutEl.querySelector('.workout__value.pace').textContent =
         workout.pace;
       workoutEl.querySelector('.workout__value.cadence').textContent =
         workout.cadence;
     }
     if (workout.type === 'cycling') {
+      // If type was changed:
+      workoutEl.querySelector('.workout__value.pace')?.classList.add('speed') &&
+        workoutEl.querySelector('.workout__value.pace').remove('pace');
+      workoutEl
+        .querySelector('.workout__value.cadence')
+        ?.classList.add('elevationGain') &&
+        workoutEl.querySelector('.workout__value.cadence').remove('cadence');
+
       workoutEl.querySelector('.workout__value.speed').textContent =
         workout.speed;
       workoutEl.querySelector('.workout__value.elevationGain').textContent =
@@ -319,7 +338,7 @@ class App {
       work => work.id === workoutEl.dataset.id
     );
 
-    // TODO: type change
+    workout.type = type;
 
     if (type === 'running') {
       const cadence = +inputCadence.value;
