@@ -1,5 +1,6 @@
 'use strict';
 
+// Html elements
 const form = document.querySelector('.form');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
@@ -8,6 +9,19 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
+// General functions
+const replaceFirstWord = function (inputString, newFirstWord) {
+  const words = inputString.split(' ');
+  words[0] = `${newFirstWord[0].toUpperCase()}${newFirstWord.slice(1)}`;
+
+  return words.join(' ');
+};
+
+const validInputs = (...inputs) => inputs.every(inp => Number.isFinite(inp));
+
+const allPositive = (...inputs) => inputs.every(inp => inp >= 0);
+
+// Classes
 class Workout {
   date = new Date();
   id = (Date.now() + '').slice(-10);
@@ -146,10 +160,6 @@ class App {
   }
 
   _newWorkout(e) {
-    const validInputs = (...inputs) =>
-      inputs.every(inp => Number.isFinite(inp));
-    const allPositive = (...inputs) => inputs.every(inp => inp >= 0);
-
     const type = inputType.value;
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
@@ -212,6 +222,15 @@ class App {
       .openPopup();
   }
 
+  /*
+  _changeWorkoutMarker(workout) {
+    // TODO: create a markers array
+    // marker = 
+    marker.options.icon.options.className = 'new-class';
+    marker.bindPopup('New Popup Content');
+  }
+  */
+
   _renderWorkout(workout) {
     let html = `
     <li class="workout workout--${workout.type}" data-id="${workout.id}">
@@ -250,7 +269,7 @@ class App {
       html += `
     <div class="workout__details">
       <span class="workout__icon">⚡️</span>
-      <span class="workout__value speed">${workout.speed}</span>
+      <span class="workout__value speed">${workout.speed.toFixed(1)}</span>
       <span class="workout__unit">km/h</span>
     </div>
     <div class="workout__details">
@@ -263,6 +282,46 @@ class App {
     form.insertAdjacentHTML('afterend', html);
   }
 
+  _changeWorkoutType(workout, workoutEl, newType) {
+    // Html workout element classes:
+    const runningElClasses = ['pace', 'cadence'];
+    const cyclingElClasses = ['speed', 'elevationGain'];
+    const currentClasses =
+      newType === 'cycling' ? runningElClasses : cyclingElClasses;
+    const newClasses =
+      newType === 'cycling' ? cyclingElClasses : runningElClasses;
+
+    // Changing description
+    workout.description = replaceFirstWord(workout.description, newType);
+    workoutEl.querySelector('.workout__title').textContent =
+      workout.description;
+    if (newType === 'cycling') {
+      workoutEl.classList.remove('workout--running');
+      workoutEl.classList.add('workout--cycling');
+
+      const iconsEl = workoutEl.querySelectorAll('.workout__icon');
+      iconsEl[0].textContent = '🚴‍♀️';
+      iconsEl[iconsEl.length - 1].textContent = '⛰';
+    } else {
+      workoutEl.classList.remove('workout--cycling');
+      workoutEl.classList.add('workout--running');
+
+      const iconsEl = workoutEl.querySelectorAll('.workout__icon');
+      iconsEl[0].textContent = '🏃‍♂️';
+      iconsEl[iconsEl.length - 1].textContent = '🦶🏼';
+    }
+
+    // Changing attributes and emojis
+    for (let i = 0; i < newClasses.length; i++) {
+      workoutEl
+        .querySelector(`.workout__value.${currentClasses[i]}`)
+        .classList.add(`${newClasses[i]}`) &&
+        workoutEl
+          .querySelector(`.workout__value.${currentClasses[i]}`)
+          .remove(`${currentClasses[i]}`);
+    }
+  }
+
   _reloadWorkout(workout) {
     const workoutEl = document.querySelector(`[data-id="${workout.id}"]`);
     workoutEl.querySelector('.workout__value.distance').textContent =
@@ -271,33 +330,22 @@ class App {
       workout.duration;
 
     if (workout.type === 'running') {
-      // TODO: change sidebar titles and emojis after type change
       // If type was changed:
-      workoutEl.querySelector('.workout__value.speed')?.classList.add('pace') &&
-        workoutEl.querySelector('.workout__value.speed').remove('speed');
-      workoutEl
-        .querySelector('.workout__value.elevationGain')
-        ?.classList.add('cadence') &&
-        workoutEl
-          .querySelector('.workout__value.elevationGain')
-          .remove('elevationGain');
+      if (workoutEl.classList.contains('workout--cycling'))
+        this._changeWorkoutType(workout, workoutEl, 'running');
 
       workoutEl.querySelector('.workout__value.pace').textContent =
-        workout.pace;
+        workout.pace.toFixed(1);
       workoutEl.querySelector('.workout__value.cadence').textContent =
         workout.cadence;
     }
     if (workout.type === 'cycling') {
       // If type was changed:
-      workoutEl.querySelector('.workout__value.pace')?.classList.add('speed') &&
-        workoutEl.querySelector('.workout__value.pace').remove('pace');
-      workoutEl
-        .querySelector('.workout__value.cadence')
-        ?.classList.add('elevationGain') &&
-        workoutEl.querySelector('.workout__value.cadence').remove('cadence');
+      if (workoutEl.classList.contains('workout--running'))
+        this._changeWorkoutType(workout, workoutEl, 'cycling');
 
       workoutEl.querySelector('.workout__value.speed').textContent =
-        workout.speed;
+        workout.speed.toFixed(1);
       workoutEl.querySelector('.workout__value.elevationGain').textContent =
         workout.elevationGain;
     }
@@ -320,23 +368,12 @@ class App {
     });
   }
 
-  _editWorkout(e, workoutEl) {
-    // TODO: refactor code - see _newWorkout method
-
+  _editWorkout(e, workout, workoutEl) {
     e.preventDefault();
-
-    const validInputs = (...inputs) =>
-      inputs.every(inp => Number.isFinite(inp));
-    const allPositive = (...inputs) => inputs.every(inp => inp >= 0);
 
     const type = inputType.value;
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
-
-    // TODO: refactor code - see _detectNewWorkout method
-    const workout = this.#workouts.find(
-      work => work.id === workoutEl.dataset.id
-    );
 
     workout.type = type;
 
@@ -375,6 +412,8 @@ class App {
         '';
 
     this._reloadWorkout(workout);
+    // TODO
+    // this._changeWorkoutMarker(workout);
     this._setLocalStorage();
 
     this._hideForm();
@@ -398,7 +437,6 @@ class App {
       work => work.id === workoutEl.dataset.id
     );
 
-    // TODO: refactor code
     if (workout.type === 'running') {
       inputElevation.closest('.form__row').classList.add('form__row--hidden');
       inputCadence.closest('.form__row').classList.remove('form__row--hidden');
@@ -416,7 +454,7 @@ class App {
     inputDistance.value = workout.distance;
     inputDuration.value = workout.duration;
 
-    this._boundEditWorkout = e => this._editWorkout(e, workoutEl);
+    this._boundEditWorkout = e => this._editWorkout(e, workout, workoutEl);
     form.addEventListener('submit', this._boundEditWorkout);
   }
 
